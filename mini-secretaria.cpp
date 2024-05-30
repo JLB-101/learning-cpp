@@ -50,6 +50,15 @@ public:
     }
 };
 
+// Classe para representar um funcionário da secretaria
+class FuncionarioSecretaria {
+public:
+    string nome;
+    string senha;
+
+    FuncionarioSecretaria(string n, string s) : nome(n), senha(s) {}
+};
+
 // Classe para representar o administrador
 class Admin {
 public:
@@ -68,6 +77,7 @@ class MiniSecretaria {
 public:
     vector<Turma> turmas;
     vector<Formador> formadores;
+    vector<FuncionarioSecretaria> funcionariosSecretaria;
     Admin admin;
 
     MiniSecretaria() : admin("admin@topo.co.mz", "01234567") {}
@@ -78,6 +88,10 @@ public:
 
     void adicionarTurma(Turma turma) {
         turmas.push_back(turma);
+    }
+
+    void adicionarFuncionarioSecretaria(FuncionarioSecretaria funcionario) {
+        funcionariosSecretaria.push_back(funcionario);
     }
 
     Turma* buscarTurma(string codigo) {
@@ -93,6 +107,15 @@ public:
         for (auto& formador : formadores) {
             if (formador.nome == nome && formador.senha == senha) {
                 return &formador;
+            }
+        }
+        return nullptr;
+    }
+
+    FuncionarioSecretaria* autenticarFuncionarioSecretaria(string nome, string senha) {
+        for (auto& funcionario : funcionariosSecretaria) {
+            if (funcionario.nome == nome && funcionario.senha == senha) {
+                return &funcionario;
             }
         }
         return nullptr;
@@ -145,83 +168,147 @@ void menuPrincipal(MiniSecretaria& secretaria) {
         cin.ignore();
 
         switch (opcao) {
-            case 1:
-                // Implementar funcionalidades da secretaria
+            case 1: {
+                string nome, senha;
+                int tentativas = 0;
+                bool autenticado = false;
+                while (tentativas < 3 && !autenticado) {
+                    cout << "Nome da Secretaria: ";
+                    getline(cin, nome);
+                    cout << "Senha: ";
+                    getline(cin, senha);
+                    FuncionarioSecretaria* funcionario = secretaria.autenticarFuncionarioSecretaria(nome, senha);
+                    if (funcionario) {
+                        autenticado = true;
+                        // Implementar funcionalidades da secretaria
+                        int opcaoSecretaria;
+                        do {
+                            cout << "\nMenu da Secretaria\n";
+                            cout << "1. Listar Turmas\n";
+                            cout << "2. Listar Estudantes\n";
+                            cout << "0. Sair\n";
+                            cout << "Escolha uma opcao: ";
+                            cin >> opcaoSecretaria;
+                            cin.ignore();
+
+                            switch (opcaoSecretaria) {
+                                case 1:
+                                    secretaria.listarTurmas();
+                                    break;
+                                case 2: {
+                                    string codigoTurma;
+                                    cout << "Codigo da Turma: ";
+                                    getline(cin, codigoTurma);
+                                    Turma* turma = secretaria.buscarTurma(codigoTurma);
+                                    if (turma) {
+                                        secretaria.listarEstudantes(*turma);
+                                    } else {
+                                        cout << "Turma nao encontrada.\n";
+                                    }
+                                    break;
+                                }
+                                case 0:
+                                    cout << "Saindo...\n";
+                                    break;
+                                default:
+                                    cout << "Opcao invalida!\n";
+                            }
+                        } while (opcaoSecretaria != 0);
+                    } else {
+                        tentativas++;
+                        if (tentativas < 3) {
+                            cout << "Credenciais invalidas. Tente novamente.\n";
+                        } else {
+                            cout << "Voce excedeu o numero de tentativas permitidas.\n";
+                        }
+                    }
+                }
                 break;
+            }
             case 2: {
                 string nome, senha;
-                cout << "Nome do Formador: ";
-                getline(cin, nome);
-                cout << "Senha: ";
-                getline(cin, senha);
-                Formador* formador = secretaria.autenticarFormador(nome, senha);
-                if (formador) {
-                    // Implementar funcionalidades do formador
-                    int opcaoFormador;
-                    do {
-                        cout << "\nMenu do Formador\n";
-                        cout << "1. Alterar Senha\n";
-                        cout << "2. Adicionar Estudante\n";
-                        cout << "3. Remover Estudante\n";
-                        cout << "4. Adicionar Nota\n";
-                        cout << "5. Listar Estudantes\n";
-                        cout << "0. Sair\n";
-                        cout << "Escolha uma opcao: ";
-                        cin >> opcaoFormador;
-                        cin.ignore();
+                int tentativas = 0;
+                bool autenticado = false;
+                while (tentativas < 3 && !autenticado) {
+                    cout << "Nome do Formador: ";
+                    getline(cin, nome);
+                    cout << "Senha: ";
+                    getline(cin, senha);
+                    Formador* formador = secretaria.autenticarFormador(nome, senha);
+                    if (formador) {
+                        autenticado = true;
+                        // Implementar funcionalidades do formador
+                        int opcaoFormador;
+                        do {
+                            cout << "\nMenu do Formador\n";
+                            cout << "1. Alterar Senha\n";
+                            cout << "2. Adicionar Estudante\n";
+                            cout << "3. Remover Estudante\n";
+                            cout << "4. Adicionar Nota\n";
+                            cout << "5. Listar Estudantes\n";
+                            cout << "0. Sair\n";
+                            cout << "Escolha uma opcao: ";
+                            cin >> opcaoFormador;
+                            cin.ignore();
 
-                        switch (opcaoFormador) {
-                            case 1: {
-                                string novaSenha;
-                                cout << "Digite a nova senha: ";
-                                getline(cin, novaSenha);
-                                formador->alterarSenha(novaSenha);
-                                cout << "Senha alterada com sucesso!\n";
-                                break;
+                            switch (opcaoFormador) {
+                                case 1: {
+                                    string novaSenha;
+                                    cout << "Digite a nova senha: ";
+                                    getline(cin, novaSenha);
+                                    formador->alterarSenha(novaSenha);
+                                    cout << "Senha alterada com sucesso!\n";
+                                    break;
+                                }
+                                case 2: {
+                                    string nomeEstudante, codigoEstudante;
+                                    cout << "Nome do Estudante: ";
+                                    getline(cin, nomeEstudante);
+                                    cout << "Codigo do Estudante: ";
+                                    getline(cin, codigoEstudante);
+                                    formador->turmas[0].estudantes.push_back({nomeEstudante, codigoEstudante, 0, 0});
+                                    cout << "Estudante adicionado com sucesso!\n";
+                                    break;
+                                }
+                                case 3: {
+                                    string codigoEstudante;
+                                    cout << "Codigo do Estudante: ";
+                                    getline(cin, codigoEstudante);
+                                    secretaria.removerEstudante(formador->turmas[0], codigoEstudante);
+                                    cout << "Estudante removido com sucesso!\n";
+                                    break;
+                                }
+                                case 4: {
+                                    string codigoEstudante;
+                                    float notaTeorico, notaPratico;
+                                    cout << "Codigo do Estudante: ";
+                                    getline(cin, codigoEstudante);
+                                    cout << "Nota Teorico: ";
+                                    cin >> notaTeorico;
+                                    cout << "Nota Pratico: ";
+                                    cin >> notaPratico;
+                                    secretaria.adicionarNota(formador->turmas[0], codigoEstudante, notaTeorico, notaPratico);
+                                    cout << "Nota adicionada com sucesso!\n";
+                                    break;
+                                }
+                                case 5:
+                                    secretaria.listarEstudantes(formador->turmas[0]);
+                                    break;
+                                case 0:
+                                    cout << "Saindo...\n";
+                                    break;
+                                default:
+                                    cout << "Opcao invalida!\n";
                             }
-                            case 2: {
-                                string nomeEstudante, codigoEstudante;
-                                cout << "Nome do Estudante: ";
-                                getline(cin, nomeEstudante);
-                                cout << "Codigo do Estudante: ";
-                                getline(cin, codigoEstudante);
-                                formador->turmas[0].estudantes.push_back({nomeEstudante, codigoEstudante, 0, 0});
-                                cout << "Estudante adicionado com sucesso!\n";
-                                break;
-                            }
-                            case 3: {
-                                string codigoEstudante;
-                                cout << "Codigo do Estudante: ";
-                                getline(cin, codigoEstudante);
-                                secretaria.removerEstudante(formador->turmas[0], codigoEstudante);
-                                cout << "Estudante removido com sucesso!\n";
-                                break;
-                            }
-                            case 4: {
-                                string codigoEstudante;
-                                float notaTeorico, notaPratico;
-                                cout << "Codigo do Estudante: ";
-                                getline(cin, codigoEstudante);
-                                cout << "Nota Teorico: ";
-                                cin >> notaTeorico;
-                                cout << "Nota Pratico: ";
-                                cin >> notaPratico;
-                                secretaria.adicionarNota(formador->turmas[0], codigoEstudante, notaTeorico, notaPratico);
-                                cout << "Notas adicionadas com sucesso!\n";
-                                break;
-                            }
-                            case 5:
-                                secretaria.listarEstudantes(formador->turmas[0]);
-                                break;
-                            case 0:
-                                cout << "Saindo...\n";
-                                break;
-                            default:
-                                cout << "Opcao invalida!\n";
+                        } while (opcaoFormador != 0);
+                    } else {
+                        tentativas++;
+                        if (tentativas < 3) {
+                            cout << "Credenciais invalidas. Tente novamente.\n";
+                        } else {
+                            cout << "Voce excedeu o numero de tentativas permitidas.\n";
                         }
-                    } while (opcaoFormador != 0);
-                } else {
-                    cout << "Credenciais invalidas.\n";
+                    }
                 }
                 break;
             }
@@ -232,10 +319,12 @@ void menuPrincipal(MiniSecretaria& secretaria) {
                 cout << "Senha: ";
                 getline(cin, senha);
                 if (secretaria.admin.autenticar(email, senha)) {
+                    // Implementar funcionalidades do admin
                     int opcaoAdmin;
                     do {
                         cout << "\nMenu do Admin\n";
                         cout << "1. Adicionar Formador\n";
+                        cout << "2. Adicionar Funcionario da Secretaria\n";
                         cout << "0. Sair\n";
                         cout << "Escolha uma opcao: ";
                         cin >> opcaoAdmin;
@@ -246,10 +335,20 @@ void menuPrincipal(MiniSecretaria& secretaria) {
                                 string nomeFormador, senhaFormador;
                                 cout << "Nome do Formador: ";
                                 getline(cin, nomeFormador);
-                                cout << "Senha: ";
+                                cout << "Senha do Formador: ";
                                 getline(cin, senhaFormador);
                                 secretaria.adicionarFormador(Formador(nomeFormador, senhaFormador));
                                 cout << "Formador adicionado com sucesso!\n";
+                                break;
+                            }
+                            case 2: {
+                                string nomeFuncionario, senhaFuncionario;
+                                cout << "Nome do Funcionario: ";
+                                getline(cin, nomeFuncionario);
+                                cout << "Senha do Funcionario: ";
+                                getline(cin, senhaFuncionario);
+                                secretaria.adicionarFuncionarioSecretaria(FuncionarioSecretaria(nomeFuncionario, senhaFuncionario));
+                                cout << "Funcionario adicionado com sucesso!\n";
                                 break;
                             }
                             case 0:
@@ -260,7 +359,7 @@ void menuPrincipal(MiniSecretaria& secretaria) {
                         }
                     } while (opcaoAdmin != 0);
                 } else {
-                    cout << "Credenciais invalidas.\n";
+                    cout << "Voce tentou danificar o sistema acessando uma area nao permitida. O diretor da instituicao foi informado disso. Contacte o departamento de TI.\n";
                 }
                 break;
             }
